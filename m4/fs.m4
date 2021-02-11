@@ -34,6 +34,29 @@ dnl module.  The global KYUA_FS_MODULE macro will call all checks required
 dnl for the library.
 
 
+dnl KYUA_FS_DIRENT_DNAME
+dnl
+dnl Checks whether struct dirent provides storage for d_name.
+AC_DEFUN([KYUA_FS_DIRENT_DNAME], [
+    AC_CACHE_CHECK(
+        [whether struct dirent provides storage for d_name],
+        [kyua_cv_dirent_dname], [
+        AC_RUN_IFELSE([AC_LANG_PROGRAM([#include <dirent.h>
+#include <stdlib.h>
+], [
+    struct dirent d;
+    return (sizeof(d.d_name) > 1) ? EXIT_SUCCESS : EXIT_FAILURE;
+])],
+        [kyua_cv_dirent_dname=yes],
+        [kyua_cv_dirent_dname=no])
+    ])
+    if test "${kyua_cv_dirent_dname}" = yes; then
+        AC_DEFINE_UNQUOTED([HAVE_DIRENT_DNAME], [1],
+                           [Define to 1 if struct dirent provides storage for d_name])
+    fi
+])
+
+
 dnl KYUA_FS_GETCWD_DYN
 dnl
 dnl Checks whether getcwd(NULL, 0) works; i.e. if getcwd(3) can dynamically
@@ -119,6 +142,7 @@ dnl Performs all checks needed by the utils/fs library.
 AC_DEFUN([KYUA_FS_MODULE], [
     AC_CHECK_HEADERS([sys/mount.h sys/statvfs.h sys/vfs.h])
     AC_CHECK_FUNCS([statfs statvfs])
+    KYUA_FS_DIRENT_DNAME
     KYUA_FS_GETCWD_DYN
     KYUA_FS_LCHMOD
     KYUA_FS_UNMOUNT

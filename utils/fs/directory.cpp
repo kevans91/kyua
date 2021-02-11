@@ -28,10 +28,17 @@
 
 #include "utils/fs/directory.hpp"
 
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
 extern "C" {
 #include <sys/types.h>
 
 #include <dirent.h>
+#if !defined(HAVE_DIRENT_DNAME)
+#include <limits.h>
+#endif
 }
 
 #include <cerrno>
@@ -132,6 +139,10 @@ struct utils::fs::detail::directory_iterator::impl : utils::noncopyable {
     /// We need to keep this at the class level so that we can use the
     /// readdir_r(3) function.
     ::dirent _dirent;
+
+#if !defined(HAVE_DIRENT_DNAME)
+    char _d_name[NAME_MAX];
+#endif
 
     /// Custom representation of the directory entry.
     ///
